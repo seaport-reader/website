@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modernizing weather data and storage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: gap 0.3s;
+        }
+
+        .back-link:hover {
+            gap: 1rem;
+        }
+
+        .hero-project {
+            padding-top: 8rem;
+            padding-bottom: 4rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .hero-project h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-project p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 5%;
+        }
+
+        .section {
+            margin-bottom: 5rem;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #222;
+        }
+
+        .section h3 {
+            font-size: 1.8rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .challenge-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .challenge-list li {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .image-grid .image-placeholder {
+            height: 300px;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .process-step {
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .process-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .process-step h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #222;
+        }
+
+        .process-step p {
+            font-size: 1rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .key-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            padding: 2rem;
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+        }
+
+        .feature h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .takeaways {
+            background: #f8f9fa;
+            padding: 3rem;
+            border-radius: 15px;
+            margin: 3rem 0;
+        }
+
+        .takeaways h3 {
+            margin-top: 0;
+        }
+
+        .takeaways ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .takeaways li {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .takeaways li:last-child {
+            border-bottom: none;
+        }
+
+        .takeaways li::before {
+            content: "✓";
+            color: #667eea;
+            font-weight: 700;
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .next-project {
+            text-align: center;
+            padding: 4rem 5%;
+            background: #f8f9fa;
+        }
+
+        .next-project h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .next-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-project h1 {
+                font-size: 2.5rem;
+            }
+
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-meta {
+                gap: 1.5rem;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Ashton Tu</a>
+        <a href="index.html#projects" class="back-link">← Back to Portfolio</a>
+    </nav>
+
+    <div class="hero-project">
+        <h1>eCR Viewer</h1>
+        <p>Designing a user-friendly tool to make complex public health data usable</p>
+        <h2>Overview</h2>
+        <p>This project was part of a large, multi-year public health data modernization initiative focused on improving how health data is ingested, processed, and used during infectious disease response. The initiative was launched in response to major gaps exposed during the COVID-19 pandemic, when public health departments struggled to handle the volume and complexity of incoming data from healthcare providers.</p>
+        <p>Our team worked on a product aimed at improving the usability of electronic case reports (eCRs)—a relatively new data standard intended to automate and streamline disease reporting from healthcare systems to public health agencies.</p>
+       
+        <div class="project-meta">
+            <div class="meta-item">
+                <div class="meta-label">Role</div>
+                <div class="meta-value">Lead Product Designer</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Team</div>
+                <div class="meta-value">User researcher</div>
+                <div class="meta-value">Content designer</div>
+                <div class="meta-value">Product manager</div>
+                <div class="meta-value">Team of engineers and data scientists</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Client</div>
+                <div class="meta-value">Federal public health agency and government digital services organization</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Timeline</div>
+                <div class="meta-value">2024 -2025</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="section">
+            <div class="overview-grid">
+                <div>
+                    <h2>Overview</h2>
+                    <p>The Weather Systems Program Office (WxPO) manages all weather data, providing it to customers across the military as well as countries, universities, meteorologists and more.</p>
+                    <p>As WxPO began migrating data to the cloud, new applications were built. However, because users were not involved in the process, they were stuck using applications that were slow, ineffective, and didn’t meet their needs. </p>
+                    <p>As a product designer, I worked on new applications that not only aligned with cloud migration efforts, but also bridged the communication gap between development and users.</p>
+                </div>
+                <div>
+                    <h3>The Challenge</h3>
+                    <p>After running interviews and a co-collaborative workshop with WxPO, we learned:</p>
+                    <ol class="challenge-list">
+                        <li>Long history of distrust between development team and users</li>
+                            <li>Users had difficulty, or were reluctant to give feedback</li>
+                        <li>Multiple applications used to complete one task, but applications were disparate and slow</li>
+                        <li>Users lacked an ‘end-to-end’ view of the data</li>
+                            <li>They wanted to see where the data was coming in (ingest), everything that happens in between, and data going out (subscriptions).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-placeholder">Project Hero Image / Before & After Comparison</div>
+
+        <div class="section">
+            <h2>Research & Discovery</h2>
+            <p>We began with comprehensive user research to understand pain points and opportunities. This included user interviews, usability testing of the existing platform, competitor analysis, and analytics review.</p>
+            
+            <h3>Key Insights</h3>
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <h4>Trust Issues</h4>
+                    <p>Users felt uncertain about security during checkout, leading to abandonment</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <h4>Information Overload</h4>
+                    <p>Too many options and details on product pages confused users</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <h4>Mobile Frustration</h4>
+                    <p>Mobile users struggled with small touch targets and slow load times</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <h4>Hidden Costs</h4>
+                    <p>Unexpected shipping costs at checkout caused frequent cart abandonment</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-grid">
+            <div class="image-placeholder">User Research Photos</div>
+            <div class="image-placeholder">Journey Map</div>
+        </div>
+
+        <div class="section">
+            <h2>Design Solution</h2>
+            <p>Based on our research, we developed a comprehensive redesign strategy focused on simplification, trust-building, and mobile optimization.</p>
+
+            <div class="key-features">
+                <div class="feature">
+                    <h4>Streamlined Checkout</h4>
+                    <p>Reduced checkout from 6 steps to 3, with guest checkout option and progress indicators. Displayed shipping costs upfront to eliminate surprises.</p>
+                </div>
+                <div class="feature">
+                    <h4>Enhanced Product Pages</h4>
+                    <p>Redesigned product pages with high-quality images, clear CTAs, and simplified information hierarchy. Added user reviews prominently.</p>
+                </div>
+                <div class="feature">
+                    <h4>Smart Search & Filters</h4>
+                    <p>Implemented intelligent search with autocomplete and visual filters that helped users find products 3x faster.</p>
+                </div>
+                <div class="feature">
+                    <h4>Mobile-First Design</h4>
+                    <p>Created a responsive design with thumb-friendly navigation, optimized images, and faster load times.</p>
+                </div>
+                <div class="feature">
+                    <h4>Trust Signals</h4>
+                    <p>Added security badges, clear return policy, and customer testimonials throughout the experience.</p>
+                </div>
+                <div class="feature">
+                    <h4>Personalization</h4>
+                    <p>Integrated recommendation engine that showed relevant products based on browsing history and preferences.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-placeholder">Design System & Components</div>
+        
+        <div class="image-grid">
+            <div class="image-placeholder">Wireframes</div>
+            <div class="image-placeholder">Prototypes</div>
+            <div class="image-placeholder">Final Designs</div>
+        </div>
+
+        <div class="section">
+            <h2>Results & Impact</h2>
+            <p>After launching the redesign, we tracked key metrics over 3 months and saw significant improvements across all areas:</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">45%</div>
+                    <div class="stat-label">Increase in Conversions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">32%</div>
+                    <div class="stat-label">Reduced Cart Abandonment</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">60%</div>
+                    <div class="stat-label">Higher User Satisfaction</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2.3x</div>
+                    <div class="stat-label">Faster Product Discovery</div>
+                </div>
+            </div>
+
+            <p>The mobile experience saw particularly strong improvements, with mobile conversions increasing by 58% and bounce rates decreasing by 40%.</p>
+        </div>
+
+        <div class="image-placeholder">Final Product Screenshots</div>
+
+        <div class="takeaways">
+            <h3>Key Takeaways</h3>
+            <ul>
+                <li>User research is invaluable - the insights we gained directly informed our most successful design decisions</li>
+                <li>Simplification can be more challenging than adding features, but it's often what users need most</li>
+                <li>Mobile-first thinking improved both mobile and desktop experiences</li>
+                <li>Small trust signals (security badges, reviews, clear policies) have significant impact on conversion</li>
+                <li>Iterative testing and refinement after launch continued to improve metrics</li>
+            </ul>
+        </div>
+    </div>
+
+   <div class="next-project">
+        <h2>More Projects</h2>
+        <p style="color: #666; margin-bottom: 2rem;">Explore my other case studies</p>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+            <a href="project-2.html" class="next-button">Health & Fitness App</a>
+            <a href="project-3.html" class="next-button">SaaS Dashboard</a>
+            <a href="index.html#projects" class="next-button" style="background: white; color: #667eea; border: 2px solid #667eea;">View All Projects</a>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
